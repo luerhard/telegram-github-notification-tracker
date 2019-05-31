@@ -32,7 +32,11 @@ def main():
     while True:
         time.sleep(tracker.update_interval)
         tracker.logger.debug("starting new update cycle")
-        tracker.update()
+        try:
+            tracker.update()
+        except Exception as e:
+            tracker.logger.error(f"ERROR: {e}")
+        
 
 if __name__ == "__main__":
     main()

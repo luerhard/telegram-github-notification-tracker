@@ -33,7 +33,7 @@ def get_logger():
     logger.addHandler(stream_handler)
     logger.handlers[0].setFormatter(f_format)
         
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logger.propagate = False
             
     return logger
