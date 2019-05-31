@@ -1,6 +1,7 @@
 FROM python:3.7-alpine
- 
-COPY . /app
+
+COPY issuetracker/  setup.py main.py /app/
+
 WORKDIR /app
 
 RUN apk --no-cache add gcc \
@@ -12,5 +13,7 @@ RUN apk --no-cache add gcc \
                libc-dev \
                libffi-dev \
                openssl-dev
+
+COPY config.ini /app
 
 CMD ["python", "main.py"]
