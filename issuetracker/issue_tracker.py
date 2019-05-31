@@ -115,3 +115,26 @@ class IssueTracker:
             url=url)
         
         return message
+
+    def push_event_message(self, event):
+        
+        payload = event.payload
+        branch = payload["ref"].split[-1]
+
+        if branch not in ["dev", "master"]:
+            self.logger.debug(f"branch {branch} neither master nor dev -- skipping Event-Notifications")
+            return
+
+        new_push_event = textwrap.dedent("""
+        New commit{plural} to {branch}
+        
+        """)
+
+        new_commits = payload["commits"]
+        n_commits = len(new_commits)
+        plural = ""
+        if len(n_commits) > 1:
+            plural = "s"
+
+
+
