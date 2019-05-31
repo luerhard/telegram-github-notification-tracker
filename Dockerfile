@@ -1,6 +1,7 @@
 FROM python:3.7-alpine
 
-COPY issuetracker/  setup.py main.py /app/
+COPY issuetracker/ /app/issuetracker
+COPY setup.py main.py /app/
 
 WORKDIR /app
 
