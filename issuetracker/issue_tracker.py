@@ -1,5 +1,3 @@
-import logging
-import sys
 import textwrap
 
 from github import Github
@@ -11,11 +9,11 @@ class IssueTracker:
                        repo, 
                        telegram_access_token,
                        response_chat_id,
+                       logger,
                        update_interval_sec=180
                        ):
 
-
-        self.logger = self.get_logger()
+        self.logger = logger
         
         self.github = Github(github_access_token)
         self.repo = self.github.get_repo(repo)
@@ -28,28 +26,7 @@ class IssueTracker:
             self.latest_event = int(next(iter(self.repo.get_events())).id)
         except StopIteration:
             self.latest_event = 0
-            
-    @staticmethod
-    def get_logger():
-        """
-        sets up logging.
-        """
-        logger = logging.getLogger("issue_tracker")
-        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-        for handler in logger.handlers:
-            logger.removeHandler(handler)
-
-        stream_handler = logging.StreamHandler(stream=sys.stdout)
-        logger.addHandler(stream_handler)
-        logger.handlers[0].setFormatter(f_format)
-            
-        logger.setLevel(logging.DEBUG)
-        logger.propagate = False
-                
-        return logger
-    
-    
     def update(self):
         new_events = []
         for event in self.repo.get_events():
@@ -69,6 +46,10 @@ class IssueTracker:
         elif event.type == "IssueCommentEvent":
             message = self.issues_comment_event_message(event)
         else:
+            self.logger.debug(f"""Not handled Event: {event.type} \n
+            PAYLOAD:
+            --------
+            {event.payload}""")
             return
         
         if message:

@@ -1,2 +1,8 @@
 config.ini
 .vscode/
+*.log
+*.egg-info/
+*.ipynb
+.ipynb_checkpoints/*
+**/__pycache__/**
+**.pyc
