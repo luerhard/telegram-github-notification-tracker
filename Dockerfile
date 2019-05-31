@@ -9,11 +9,10 @@ RUN apk --no-cache add gcc \
                        libc-dev \
                        libffi-dev \
                        openssl-dev \
-    && pip install --no-cache-dir . \
-    && apk del gcc \
-               libc-dev \
-               libffi-dev \
-               openssl-dev
+
+RUN pip install --no-cache-dir python-telegram-bot==11.1.0 pygithub==1.43.7
+
+RUN pip install --no-cache-dir . \
 
 COPY config.ini /app
 
