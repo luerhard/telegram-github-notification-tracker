@@ -35,7 +35,8 @@ def main():
         try:
             tracker.update()
         except Exception as e:
-            logger.error(e)
+            tracker.logger.error(f"ERROR: {e}")
+        
 
 if __name__ == "__main__":
     main()
