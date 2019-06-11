@@ -1,6 +1,10 @@
 import textwrap
 
+import markdown
+import re
+import bs4
 from github import Github
+import telegram
 from telegram import Bot, ParseMode
 
 class IssueTracker:
@@ -14,6 +18,7 @@ class IssueTracker:
                        ):
 
         self.logger = logger
+
         
         self.github = Github(github_access_token)
         self.repo = self.github.get_repo(repo)
@@ -21,6 +26,17 @@ class IssueTracker:
 
         self.telegram_bot = Bot(telegram_access_token)
         self.chat_id = response_chat_id
+
+        self.remove_from_message = [
+            ("(<p>)|(</p>)",""),
+            ("(<h[0-9]>)|(</h[0-9]>)",""),
+            ("<hr />", "\n"),
+            ("(<blockquote>)|(</blockquote>)", "\n"),
+            ("(<ol>)|(</ol>)", ""),
+            ("(<ul>)|(</ul>)", ""),
+            ("(<li>)|(</li>)", ""),
+        ]
+
         
         try:
             self.latest_event = int(next(iter(self.repo.get_events())).id)
@@ -63,15 +79,31 @@ class IssueTracker:
         if message:
             self.logger.info(f"Sending message for event: {event.id}")
             self.send_message(message)
+    
+    def format_message(self, message):
+        message = markdown.markdown(message)
 
+        for pattern, sub in self.remove_from_message:
+            message = re.sub(pattern, sub, message)
+
+        return message
+
+    def _send(self, message):
+        self.telegram_bot.send_message(self.chat_id,
+                                        message,
+                                        parse_mode='HTML',
+                                        disable_notification=True,
+                                        disable_web_page_preview=True)
     def send_message(self, message):
         try:
-            self.telegram_bot.send_message(self.chat_id,
-                                            message,
-                                            disable_notification=True,
-                                            disable_web_page_preview=True)
+            message = self.format_message(message)
+            self._send(message)
+        except telegram.TelegramError as e:
+            soup = bs4.BeautifulSoup(message, "lxml")
+            message = f"rendered as raw:\n{soup.text}\n rendering error: {e}"
+            self._send(message)
         except Exception as e:
-            self.logger.error(f"Error in send_message() from telegram: {e}")
+            self.logger.error(f"Error in send_message() from telegram: {e}\nMessage that failed:\n{message}")
     
     @staticmethod
     def issues_comment_event_message(event):
