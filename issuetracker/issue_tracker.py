@@ -68,7 +68,6 @@ class IssueTracker:
         try:
             self.telegram_bot.send_message(self.chat_id,
                                             message,
-                                            parse_mode=ParseMode.MARKDOWN, 
                                             disable_notification=True,
                                             disable_web_page_preview=True)
         except Exception as e:
