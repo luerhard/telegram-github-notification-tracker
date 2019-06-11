@@ -7,7 +7,7 @@ RUN apk --no-cache add gcc \
 
 RUN pip install --no-cache-dir python-telegram-bot==11.1.0 \
                                 pygithub==1.43.7 \
-                                bs4==4.7.1 \
+                                beautifulsoup4==4.7.1 \
                                 markdown==3.1.1
 
 COPY issuetracker/ /app/issuetracker
