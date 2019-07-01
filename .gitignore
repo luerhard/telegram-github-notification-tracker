@@ -6,3 +6,5 @@ config.ini
 .ipynb_checkpoints/*
 **/__pycache__/**
 **.pyc
+.mypy_cache/**
+issuetracker.log*
