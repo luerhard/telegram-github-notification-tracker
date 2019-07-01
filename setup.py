@@ -6,6 +6,6 @@ setup(
     install_requires=[
         "pygithub==1.43.7",
         "python-telegram-bot==11.1.0",
-        "lxml"
+        "html5lib"
     ]
 )

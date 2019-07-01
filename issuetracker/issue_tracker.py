@@ -1,25 +1,19 @@
-import textwrap
-
-import markdown
-import re
 import bs4
 from github import Github
+import markdown
+import re
 import telegram
-from telegram import Bot, ParseMode
+from telegram import Bot
+import textwrap
+
 
 class IssueTracker:
-    
-    def __init__(self, github_access_token, 
-                       repo, 
-                       telegram_access_token,
-                       response_chat_id,
-                       logger,
-                       update_interval_sec=180
-                       ):
+
+    def __init__(self, github_access_token, repo, telegram_access_token, response_chat_id, logger,
+        update_interval_sec=180):
 
         self.logger = logger
 
-        
         self.github = Github(github_access_token)
         self.repo = self.github.get_repo(repo)
         self.update_interval = update_interval_sec
@@ -27,17 +21,10 @@ class IssueTracker:
         self.telegram_bot = Bot(telegram_access_token)
         self.chat_id = response_chat_id
 
-        self.remove_from_message = [
-            ("(<p>)|(</p>)",""),
-            ("(<h[0-9]>)|(</h[0-9]>)",""),
-            ("<hr />", "\n"),
-            ("(<blockquote>)|(</blockquote>)", "\n"),
-            ("(<ol>)|(</ol>)", ""),
-            ("(<ul>)|(</ul>)", ""),
-            ("(<li>)|(</li>)", ""),
-        ]
+        self.remove_from_message = [("(<p>)|(</p>)", ""), ("(<h[0-9]>)|(</h[0-9]>)", ""), ("<hr />", "\n"),
+            ("(<blockquote>)|(</blockquote>)", "\n"), ("(<ol>)|(</ol>)", ""), ("(<ul>)|(</ul>)", ""),
+            ("(<li>)|(</li>)", "")]
 
-        
         try:
             self.latest_event = int(next(iter(self.repo.get_events())).id)
         except StopIteration:
@@ -99,7 +86,7 @@ class IssueTracker:
             message = self.format_message(message)
             self._send(message)
         except telegram.TelegramError as e:
-            soup = bs4.BeautifulSoup(message, "lxml")
+            soup = bs4.BeautifulSoup(message, "html5lib")
             message = f"rendered as raw:\n{soup.text}\n rendering error: {e}"
             self._send(message)
         except Exception as e:
