@@ -21,23 +21,24 @@ def main():
 
     logger.info(f"Responding to Chat ID: {chat_id}")
 
-    def get_tracker():
+    def run(logger):
         tracker = IssueTracker(github_access_token=config["github"]["access_token"], repo=config["github"]["repo"],
-                               update_interval_sec=int(config["github"]["update_interval"]),
-                               telegram_access_token=config["telegram"]["access_token"], response_chat_id=chat_id,
-                               logger=logger)
-        return tracker
+            update_interval_sec=int(config["github"]["update_interval"]),
+            telegram_access_token=config["telegram"]["access_token"], response_chat_id=chat_id,
+            logger=logger)
 
-    tracker = get_tracker()
-    while True:
-        time.sleep(tracker.update_interval)
-        tracker.logger.debug("starting new update cycle")
-        try:
+        while True:
+            time.sleep(tracker.update_interval)
+            tracker.logger.debug("starting new update cycle")
             tracker.update()
-        except Exception as e:
-            tracker.logger.error(f"ERROR: {e}")
-            tracker = get_tracker()
 
+    while True:
+        try:
+            run(logger)
+        except Exception as e:
+            logger.error(f"ERROR: {e}")
+            time.sleep(10)
+            run(logger)
 
 if __name__ == "__main__":
     main()
