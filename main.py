@@ -38,7 +38,6 @@ def main():
         except Exception as e:
             logger.error(f"ERROR: {e}")
             time.sleep(10)
-            run(logger)
 
 if __name__ == "__main__":
     main()
