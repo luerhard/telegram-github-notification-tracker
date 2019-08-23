@@ -76,6 +76,9 @@ class IssueTracker:
         return message
 
     def _send(self, message):
+        #shorten too long messages:
+        if len(message) > 4096:
+            message = message[:4095]
         self.telegram_bot.send_message(self.chat_id,
                                         message,
                                         parse_mode='HTML',
