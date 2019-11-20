@@ -44,15 +44,15 @@ class IssueTracker:
             if possible_issue_number.isnumeric():
                 issue_number = int(possible_issue_number)
                 message = message.lstrip(f"{possible_issue_number} ")
-                self.logger.info(f"Telegram to github (auto refer): issue {issue_number}message: {message} by {name}")
+                self.logger.info(f"Telegram to github (specific refer): issue {issue_number} message: {message} by {name}")
             else:
                 if self.latest_issue == 0:
                     self._send("Can't send. Don't know which Issue you mean...")
-                    self.logger.warn("Illegal message (unknow Issue): {message} by {name}")
+                    self.logger.warn("Illegal message (unknown Issue): {message} by {name}")
                     return
                 issue_number = self.latest_issue
                 self._send(f"referring to Issue #{issue_number}")
-                self.logger.info(f"Telegram to github (specific refer): issue {issue_number}message: {message} by {name}")
+                self.logger.info(f"Telegram to github (auto refer): issue {issue_number} message: {message} by {name}")
 
             issue = self.repo.get_issue(issue_number)
             new_comment = textwrap.dedent("""
@@ -61,7 +61,17 @@ class IssueTracker:
             issue.create_comment(new_comment.format(user=name, body=message))
 
         def reply_action(update, context):
-            name = " ".join((update.effective_user.first_name, update.effective_user.last_name)) 
+            self.logger.info(f"receiving message from {update.effective_user}")
+            firstname = update.effective_user.first_name
+            lastname = update.effective_user.last_name
+            name = [name for name in [firstname, lastname] if name]
+            try:
+                name = " ".join(name).strip()
+            except Exception as e:
+                self.logger.debug("Name join failed")
+                self.logger.debug(e)
+
+            self.logger.debug(f"Created name {name}")
             send_message(update.effective_message.text, name)
 
         updater = Updater(token=self.telegram_access_token, use_context=True)
