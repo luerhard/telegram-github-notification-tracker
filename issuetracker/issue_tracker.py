@@ -4,22 +4,26 @@ import markdown
 import re
 import telegram
 from telegram import Bot
+from telegram.ext import Updater, CommandHandler
 import textwrap
-
+import asyncio
+import time
 
 class IssueTracker:
 
-    def __init__(self, github_access_token, repo, telegram_access_token, response_chat_id, logger,
-        update_interval_sec=180):
+    def __init__(self, github_access_token, 
+                 repo, telegram_access_token, response_chat_id, logger,
+                 bot_name, update_interval_sec=180):
 
         self.logger = logger
 
         self.github = Github(github_access_token)
         self.repo = self.github.get_repo(repo)
         self.update_interval = update_interval_sec
-
-        self.telegram_bot = Bot(telegram_access_token)
+        self.telegram_access_token = telegram_access_token
+        self.telegram_bot = Bot(self.telegram_access_token)
         self.chat_id = response_chat_id
+        self.bot_name = bot_name
 
         self.remove_from_message = [("(<p>)|(</p>)", ""), ("(<h[0-9]>)|(</h[0-9]>)", ""), ("<hr />", "\n"),
             ("(<blockquote>)|(</blockquote>)", "\n"), ("(<ol>)|(</ol>)", ""), ("(<ul>)|(</ul>)", ""),
@@ -29,6 +33,49 @@ class IssueTracker:
             self.latest_event = int(next(iter(self.repo.get_events())).id)
         except StopIteration:
             self.latest_event = 0
+
+        self.latest_issue = 0
+
+    @asyncio.coroutine
+    def chat_observer(self):
+        def send_message(message, name):
+            message = message.lstrip("/r").strip()
+            possible_issue_number = message.split()[0]
+            if possible_issue_number.isnumeric():
+                issue_number = int(possible_issue_number)
+                message = message.lstrip(f"{possible_issue_number} ")
+                self.logger.info(f"Telegram to github (auto refer): issue {issue_number}message: {message} by {name}")
+            else:
+                if self.latest_issue == 0:
+                    self._send("Can't send. Don't know which Issue you mean...")
+                    self.logger.warn("Illegal message (unknow Issue): {message} by {name}")
+                    return
+                issue_number = self.latest_issue
+                self._send(f"referring to Issue #{issue_number}")
+                self.logger.info(f"Telegram to github (specific refer): issue {issue_number}message: {message} by {name}")
+
+            issue = self.repo.get_issue(issue_number)
+            new_comment = textwrap.dedent("""
+                **by {user} via telegram**
+                {body}""")
+            issue.create_comment(new_comment.format(user=name, body=message))
+
+        def reply_action(update, context):
+            name = " ".join((update.effective_user.first_name, update.effective_user.last_name)) 
+            send_message(update.effective_message.text, name)
+
+        updater = Updater(token=self.telegram_access_token, use_context=True)
+        dispatcher = updater.dispatcher
+        reply_handler = CommandHandler("r", reply_action)
+        dispatcher.add_handler(reply_handler)
+        updater.start_polling()
+
+    @asyncio.coroutine
+    def run(self):
+        while True:
+            time.sleep(self.update_interval)
+            self.logger.debug("starting new update cycle")
+            self.update()
 
     def update(self):
         new_events = []
@@ -41,8 +88,9 @@ class IssueTracker:
             new_events = sorted(new_events, key=lambda x: int(x.id))
             self.latest_event = int(new_events[-1].id)
             for event in new_events:
-                self.notify(event)
-                
+                if event.actor.login != self.bot_name:
+                    self.notify(event)
+
     def notify(self, event):
         try:
             self.logger.debug(f"Parsing payload for {event.type}\n{event.payload}")
@@ -95,19 +143,17 @@ class IssueTracker:
         except Exception as e:
             self.logger.error(f"Error in send_message() from telegram: {e}\nMessage that failed:\n{message}")
     
-    @staticmethod
-    def issues_comment_event_message(event):
+    def issues_comment_event_message(self, event):
         new_comment = textwrap.dedent("""
         
         New Comment on Issue: [{issue}]({url})
-        by {username}
-        ------
+        by *{username}*
         {body}""")
         
         payload = event.payload
-        issue_number = payload["issue"]["number"]
+        number = payload["issue"]["number"]
         issue_title = payload["issue"]["title"]
-        issue = f"#{issue_number} {issue_title}"
+        issue = f"#{number} {issue_title}"
         username = event.actor.name
         body = payload["comment"]["body"]
         url = payload["issue"]["html_url"]
@@ -119,10 +165,12 @@ class IssueTracker:
             url=url,
             event_id=event.id)
         
+        self.latest_issue = number
+        
         return message
-    
-    @staticmethod
-    def issues_event_message(event):
+
+
+    def issues_event_message(self, event):
         new_issue = textwrap.dedent("""
             Issue {action} by {username}
             Assignees: {assignees}
@@ -146,7 +194,9 @@ class IssueTracker:
             number=number,
             body = payload["issue"]["body"],
             url=url)
-        
+
+        self.latest_issue = number
+
         return message
 
     def push_event_message(self, event):
