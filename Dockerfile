@@ -5,7 +5,7 @@ RUN apk --no-cache add gcc \
                        libffi-dev \
                        openssl-dev 
 
-RUN pip install --no-cache-dir python-telegram-bot==11.1.0 \
+RUN pip install --no-cache-dir python-telegram-bot==12.2.0 \
                                 pygithub==1.43.7 \
                                 beautifulsoup4==4.7.1 \
                                 markdown==3.1.1 \

@@ -74,7 +74,7 @@ class IssueTracker:
             self.logger.debug(f"Created name {name}")
             send_message(update.effective_message.text, name)
 
-        updater = Updater(token=self.telegram_access_token)
+        updater = Updater(token=self.telegram_access_token, use_context=True)
         dispatcher = updater.dispatcher
         reply_handler = CommandHandler("r", reply_action)
         dispatcher.add_handler(reply_handler)
