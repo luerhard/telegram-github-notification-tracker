@@ -26,7 +26,7 @@ def main():
         tracker = IssueTracker(github_access_token=config["github"]["access_token"], repo=config["github"]["repo"],
             update_interval_sec=int(config["github"]["update_interval"]),
             telegram_access_token=config["telegram"]["access_token"], response_chat_id=chat_id,
-            bot_name=config["telegram"]["bot_name"],
+            bot_name=config["github"]["bot_name"],
             logger=logger)
 
         loop = asyncio.get_event_loop()
