@@ -105,9 +105,13 @@ class IssueTracker:
         try:
             self.logger.debug(f"Parsing payload for {event.type}\n{event.payload}")
             if event.type == "IssuesEvent":
-                message = self.issues_event_message(event)
+                issue_id, message = self.issues_event_message(event)
+                self.latest_issue = issue_id
+                self.logger.debug(f"Setting current IssuesID to {self.latest_issue}")
             elif event.type == "IssueCommentEvent":
-                message = self.issues_comment_event_message(event)
+                issue_id, message = self.issues_comment_event_message(event)
+                self.latest_issue = issue_id
+                self.logger.debug(f"Setting current IssuesID to {self.latest_issue}")
             elif event.type == "PushEvent":
                 message = self.push_event_message(event)
             elif event.type == "PullRequestEvent":
@@ -175,9 +179,7 @@ class IssueTracker:
             url=url,
             event_id=event.id)
         
-        self.latest_issue = number
-        
-        return message
+        return number, message
 
 
     def issues_event_message(self, event):
@@ -205,9 +207,7 @@ class IssueTracker:
             body = payload["issue"]["body"],
             url=url)
 
-        self.latest_issue = number
-
-        return message
+        return number, message
 
     def push_event_message(self, event):
         
