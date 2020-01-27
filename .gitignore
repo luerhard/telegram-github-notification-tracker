@@ -8,3 +8,7 @@ config.ini
 **.pyc
 .mypy_cache/**
 issuetracker.log*
+venv/**
+log.out
+run_bot.sh
+
