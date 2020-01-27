@@ -25,9 +25,16 @@ class IssueTracker:
         self.chat_id = response_chat_id
         self.bot_name = bot_name
 
-        self.remove_from_message = [("(<p>)|(</p>)", ""), ("(<h[0-9]>)|(</h[0-9]>)", ""), ("<hr />", "\n"),
-            ("(<blockquote>)|(</blockquote>)", "\n"), ("(<ol>)|(</ol>)", ""), ("(<ul>)|(</ul>)", ""),
-            ("(<li>)|(</li>)", ""), ("<sub>|</sub>)", ""), ("<img(.*?)>|</img>", "")]
+        self.remove_from_message = [("(<p>)|(</p>)", ""), 
+                                    ("(<h[0-9]>)|(</h[0-9]>)", ""),
+                                    ("<hr />", "\n"),
+                                    ("(<blockquote>)|(</blockquote>)", "\n"),
+                                    ("(<ol>)|(</ol>)", ""),
+                                    ("(<ul>)|(</ul>)", ""),
+                                    ("(<li>)|(</li>)", ""),
+                                    ("(<sub>)|(</sub>)", ""),
+                                    ("(<img(.*?)>)|(</img>)", ""),
+                                   ]
 
         try:
             self.latest_event = int(next(iter(self.repo.get_events())).id)
