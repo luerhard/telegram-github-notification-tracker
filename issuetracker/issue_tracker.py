@@ -27,7 +27,7 @@ class IssueTracker:
 
         self.remove_from_message = [("(<p>)|(</p>)", ""), ("(<h[0-9]>)|(</h[0-9]>)", ""), ("<hr />", "\n"),
             ("(<blockquote>)|(</blockquote>)", "\n"), ("(<ol>)|(</ol>)", ""), ("(<ul>)|(</ul>)", ""),
-            ("(<li>)|(</li>)", "")]
+            ("(<li>)|(</li>)", ""), ("<sub>|</sub>)", ""), ("<img(.*?)>|</img>", "")]
 
         try:
             self.latest_event = int(next(iter(self.repo.get_events())).id)
