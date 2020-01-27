@@ -25,7 +25,7 @@ def get_logger():
     for handler in logger.handlers:
         logger.removeHandler(handler)
 
-    stream_handler = TimedRotatingFileHandler("issuetracker.log",
+    stream_handler = TimedRotatingFileHandler(issuetracker.PATH / "issuetracker.log",
         when="d",
         interval=1,
         backupCount=3

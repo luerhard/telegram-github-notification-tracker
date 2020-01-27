@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import time
+import issuetracker
 from issuetracker import IssueTracker, get_chatid, get_logger
 import asyncio
 
@@ -7,7 +8,7 @@ import asyncio
 def main():
 
     config = ConfigParser()
-    config.read("config.ini")
+    config.read(issuetracker.PATH / "config.ini")
 
     logger = get_logger()
 
@@ -18,7 +19,7 @@ def main():
         logger.info("""Could not find chat_id in config file. 
         I am using the last chat_id from the last message to the bot instead. """)
 
-        chat_id = get_chatid("config.ini")
+        chat_id = get_chatid(issuetracker.PATH / "config.ini")
 
     logger.info(f"Responding to Chat ID: {chat_id}")
 
