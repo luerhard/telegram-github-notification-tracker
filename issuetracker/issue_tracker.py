@@ -33,7 +33,7 @@ class IssueTracker:
                                     ("(<ul>)|(</ul>)", ""),
                                     ("(<li>)|(</li>)", ""),
                                     ("(<sub>)|(</sub>)", ""),
-                                    ("(<img(.*?)>)|(</img>)", ""),
+                                    ("(<img(.*?)>)|(</img>)", "<i>*image removed*</i>"),
                                    ]
 
         try:
