@@ -240,7 +240,7 @@ class IssueTracker:
         for commit in new_commits:
             url = commit['url'].replace("https://api.github.com/repos/", "https://github.com/").replace("/commits/", "/commit/")
             self.logger.debug(f"replaced url = {url}")
-            commit_message += f"-----\nby {commit['author']['name']}\n{commit['message']} [visit here]({url})\n"
+            commit_message += f"\nby {commit['author']['name']}\n{commit['message']} [visit here]({url})"
         
         message = new_push_event.format(
             n_commits=n_commits,
