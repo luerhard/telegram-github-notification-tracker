@@ -109,6 +109,7 @@ class IssueTracker:
                     self.notify(event)
 
     def notify(self, event):
+        message = None
         try:
             self.logger.debug(f"Parsing payload for {event.type}\n{event.payload}")
             if event.type == "IssuesEvent":
